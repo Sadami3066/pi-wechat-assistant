@@ -28,7 +28,7 @@ pi install npm:pi-wechat-assistant
 或从 GitHub 安装：
 
 ```bash
-pi install git:github.com/sj-over9000/pi-wechat-assistant
+pi install git:github.com/shenjiecode/pi-wechat-assistant
 ```
 
 ### 使用
@@ -118,7 +118,7 @@ pi install git:github.com/sj-over9000/pi-wechat-assistant
 ## 开发
 
 ```bash
-git clone https://github.com/sj-over9000/pi-wechat-assistant.git
+git clone https://github.com/shenjiecode/pi-wechat-assistant.git
 cd pi-wechat-assistant
 npm install
 

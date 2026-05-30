@@ -6,13 +6,13 @@
   "main": "src/index.ts",
   "license": "MIT",
   "author": "sj",
-  "homepage": "https://github.com/sj-over9000/pi-wechat-assistant#readme",
+  "homepage": "https://github.com/shenjiecode/pi-wechat-assistant#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sj-over9000/pi-wechat-assistant.git"
+    "url": "git+https://github.com/shenjiecode/pi-wechat-assistant.git"
   },
   "bugs": {
-    "url": "https://github.com/sj-over9000/pi-wechat-assistant/issues"
+    "url": "https://github.com/shenjiecode/pi-wechat-assistant/issues"
   },
   "keywords": [
     "pi",
