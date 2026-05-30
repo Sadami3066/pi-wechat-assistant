@@ -72,6 +72,9 @@ export default function wechatAssistant(pi: ExtensionAPI) {
   let pendingInjection: QueuedMessage | null = null
   let activeRequest: QueuedMessage | null = null
 
+  // 最后对话的微信用户（用于 TUI 发起对话时同步回复）
+  let lastWechatUser: { userId: string; contextToken: string } | null = null
+
   // --- 调试日志 ---
 
   function log(message: string): void {
@@ -193,6 +196,7 @@ export default function wechatAssistant(pi: ExtensionAPI) {
       contextToken: message.contextToken,
     }
     queue.push(request)
+    lastWechatUser = { userId: message.userId, contextToken: message.contextToken }
     log(`消息入队: ${request.preview}`)
     updateStatusBar()
     drainQueue()
@@ -239,6 +243,26 @@ export default function wechatAssistant(pi: ExtensionAPI) {
       await client.stopTyping(request.userId).catch(() => {})
       updateStatusBar()
       drainQueue()
+    }
+  }
+
+  // --- TUI → 微信同步 ---
+
+  async function syncReplyToWechat(
+    messages: Array<{ role?: string; content?: unknown }>,
+  ): Promise<void> {
+    if (!client || !lastWechatUser) return
+
+    const reply = extractFinalAssistantText(messages)
+    if (!reply) return
+
+    try {
+      const chunks = splitAndFilterMarkdown(reply)
+      for (const chunk of chunks) {
+        await client.sendText(lastWechatUser.userId, chunk)
+      }
+    } catch (error) {
+      log(`同步回复到微信失败: ${formatError(error)}`)
     }
   }
 
@@ -533,7 +557,14 @@ export default function wechatAssistant(pi: ExtensionAPI) {
   pi.on('agent_end', async (event, ctx) => {
     latestCtx = ctx
     agentIdle = true
-    await completeActiveRequest(event.messages as Array<{ role?: string; content?: unknown }>)
+
+    if (activeRequest) {
+      // 微信发起的请求 → 正常回复
+      await completeActiveRequest(event.messages as Array<{ role?: string; content?: unknown }>)
+    } else if (running && client && lastWechatUser) {
+      // TUI 发起的请求 → 同步 AI 回复到微信
+      await syncReplyToWechat(event.messages as Array<{ role?: string; content?: unknown }>)
+    }
   })
 
   // 会话关闭
