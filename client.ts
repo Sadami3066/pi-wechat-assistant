@@ -2,9 +2,9 @@
 // WeixinClient — 封装微信 iLink Bot 消息收发
 // ============================================================================
 
-import { randomUUID } from 'node:crypto'
-import { ApiError, getUpdates as apiGetUpdates, getConfig, sendMessage as apiSendMessage, sendTyping as apiSendTyping, isSessionExpired } from './api.js'
-import type { Credentials, IncomingMessage, MessageItem } from './types.js'
+import { getUpdates as apiGetUpdates, getConfig, sendMessage as apiSendMessage, sendTyping as apiSendTyping, isSessionExpired } from './api.js'
+import { debugLog } from './logger.js'
+import type { Credentials, IncomingMessage, MessageItem, WeixinMessage } from './types.js'
 
 export class SessionExpiredError extends Error {
   constructor() {
@@ -111,7 +111,7 @@ export class WeixinClient {
       type,
       imageUrl,
       imageAesKey,
-      raw: raw as any,
+      raw: raw as WeixinMessage,
       contextToken: raw.context_token ?? '',
       timestamp: new Date(raw.create_time_ms ?? Date.now()),
     }
@@ -133,13 +133,6 @@ export class WeixinClient {
 }
 
 // --- 消息内容提取 ---
-
-function debugLog(message: string): void {
-  const timestamp = new Date().toISOString()
-  try {
-    require('node:fs').appendFileSync('/tmp/pi-wechat-debug.log', `[${timestamp}] ${message}\n`)
-  } catch {}
-}
 
 function extractContent(items: MessageItem[]): { type: IncomingMessage['type']; text: string; imageUrl?: string; imageAesKey?: string } {
   let hasVideo = false
